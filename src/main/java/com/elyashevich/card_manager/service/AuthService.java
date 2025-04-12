@@ -1,6 +1,5 @@
 package com.elyashevich.card_manager.service;
 
-import com.elyashevich.card_manager.api.dto.auth.AuthDto;
 import com.elyashevich.card_manager.entity.User;
 
 public interface AuthService {

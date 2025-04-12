@@ -55,9 +55,7 @@ public class AuthController {
 
     @PostMapping("/refresh/{token}")
     public ResponseEntity<AuthDto> refresh(final @PathVariable("token") String token) {
-        System.out.println(token);
         var result = this.authService.refresh(token);
-        System.out.println(result);
         return ResponseEntity.ok(AuthDtoGeneratorUtil.generateAuthDto(result));
     }
 }

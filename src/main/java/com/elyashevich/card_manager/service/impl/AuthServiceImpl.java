@@ -5,7 +5,6 @@ import com.elyashevich.card_manager.exception.PasswordMismatchException;
 import com.elyashevich.card_manager.service.AuthService;
 import com.elyashevich.card_manager.service.UserService;
 import com.elyashevich.card_manager.util.SafetyExtractEmailUtil;
-import com.elyashevich.card_manager.util.TokenUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;

@@ -1,7 +1,6 @@
 package com.elyashevich.card_manager.security;
 
 import com.elyashevich.card_manager.util.JsonMessageProviderUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
