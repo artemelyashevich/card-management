@@ -1,0 +1,34 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: elyashevich.artem
+      changes:
+        - createTable:
+            tableName: card_limits
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: daily_limit
+                  type: DECIMAL(19, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: monthly_limit
+                  type: DECIMAL(19, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    unique: true
+                    foreignKeyName: fk_limit_card
+                    referencedTableName: cards
+                    referencedColumnNames: id

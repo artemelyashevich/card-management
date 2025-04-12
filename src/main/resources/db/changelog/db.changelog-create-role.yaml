@@ -1,0 +1,20 @@
+databaseChangeLog:
+  - changeSet:
+      id: 5
+      author: elyashevich.artem
+      changes:
+        - createTable:
+            tableName: user_roles
+            columns:
+              - column:
+                  name: user_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_user_roles_users
+                    references: users(id)
+              - column:
+                  name: role_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false

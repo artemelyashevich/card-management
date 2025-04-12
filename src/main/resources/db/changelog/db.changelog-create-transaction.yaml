@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 3
+      author: elyashevich.artem
+      changes:
+        - createTable:
+            tableName: transactions
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: amount
+                  type: DECIMAL(19, 2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+              - column:
+                  name: card_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fk_transaction_card
+                    referencedTableName: cards
+                    referencedColumnNames: id
