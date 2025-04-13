@@ -1,5 +1,6 @@
 package com.elyashevich.card_manager.service.impl;
 
+import com.elyashevich.card_manager.api.dto.filter.FilterDto;
 import com.elyashevich.card_manager.entity.Role;
 import com.elyashevich.card_manager.entity.User;
 import com.elyashevich.card_manager.exception.ResourceAlreadyExistsException;
@@ -8,6 +9,10 @@ import com.elyashevich.card_manager.repository.UserRepository;
 import com.elyashevich.card_manager.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +28,25 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+
+    @Override
+    public Page<User> findAll(final FilterDto filterDto, final PageRequest pageRequest) {
+        log.debug("Attempting to find all users");
+
+        // TODO
+        var users = userRepository.findAll(
+            PageRequest.of(
+                pageRequest.getPageSize(),
+                pageRequest.getPageNumber(),
+                Sort.by(filterDto.sort().equalsIgnoreCase("asc")
+                ? Sort.Direction.ASC
+                : Sort.Direction.DESC
+            ))
+        );
+
+        log.info("Found users: {}", users);
+        return users;
+    }
 
     @Override
     public User findById(final Long id) {
