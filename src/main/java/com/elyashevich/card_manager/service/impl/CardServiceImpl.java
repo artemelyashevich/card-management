@@ -3,6 +3,7 @@ package com.elyashevich.card_manager.service.impl;
 import com.elyashevich.card_manager.api.dto.card.CardRequestDto;
 import com.elyashevich.card_manager.api.dto.card.CardWithUserDto;
 import com.elyashevich.card_manager.entity.Card;
+import com.elyashevich.card_manager.entity.CardLimit;
 import com.elyashevich.card_manager.entity.CardStatus;
 import com.elyashevich.card_manager.exception.ResourceNotFoundException;
 import com.elyashevich.card_manager.repository.CardRepository;
@@ -12,16 +13,12 @@ import com.elyashevich.card_manager.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.NotImplementedException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 
 @Slf4j
 @Service
@@ -83,6 +80,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<CardWithUserDto> findAll() {
         log.debug("Attempting find all cards");
 
@@ -92,8 +90,61 @@ public class CardServiceImpl implements CardService {
         return cards;
     }
 
+    @Override
+    @Transactional
+    public Card changeStatus(final Long id, final CardStatus status) {
+        log.debug("Attempting change status for id: {}", id);
+
+        var card = this.findById(id);
+        card.setStatus(status);
+
+        var updated = this.cardRepository.save(card);
+
+        log.info("Updated card: {}", updated);
+        return updated;
+    }
+
+    @Override
+    @Transactional
+    public void delete(final Long id) {
+        log.debug("Attempting delete card with id: {}", id);
+
+        var card = this.findById(id);
+
+        this.cardRepository.delete(card);
+
+        log.info("Deleted card: {}", card);
+    }
+
+    @Override
+    @Transactional
+    public Card saveLimit(final Long id, final CardLimit cardLimit) {
+        log.debug("Attempting save limit for id: {}", id);
+
+        var card = this.findById(id);
+        card.setLimit(cardLimit);
+
+        var updated = this.cardRepository.save(card);
+
+        log.info("Updated card: {}", updated);
+        return updated;
+    }
+
+    @Override
+    @Transactional
+    public void deleteLimit(final Long cardId) {
+        log.debug("Attempting delete limit for id: {}", cardId);
+
+        var card = this.findById(cardId);
+        card.setLimit(null);
+
+        var updated = this.cardRepository.save(card);
+
+        log.info("Updated card: {}", updated);
+    }
+
     private String mask(final String cardNumber) {
-        String last4 = cardNumber.substring(cardNumber.length() - 4);
+        var last4 = cardNumber.substring(cardNumber.length() - 4);
         return "**** **** **** " + last4;
     }
 }
