@@ -16,11 +16,11 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
 
 import static com.elyashevich.card_manager.util.TokenConstantUtil.TOKEN_PREFIX;
 
@@ -39,29 +39,29 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         @NonNull final FilterChain filterChain
     ) throws ServletException, IOException {
         try {
-            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+            var authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
 
             if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
                 filterChain.doFilter(request, response);
                 return;
             }
 
-            String jwt = authHeader.substring(TOKEN_PREFIX_LENGTH);
-            String email = SafetyExtractEmailUtil.extractEmailClaims(jwt);
+            var jwt = authHeader.substring(TOKEN_PREFIX_LENGTH);
+            var email = SafetyExtractEmailUtil.extractEmailClaims(jwt);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
 
-                List<SimpleGrantedAuthority> authorities = TokenUtil.getRoles(jwt).stream()
-                    .map(SimpleGrantedAuthority::new)
-                    .toList();
-
+                var context = SecurityContextHolder.createEmptyContext();
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     email,
                     null,
-                    authorities
+                    TokenUtil.getRoles(jwt).stream()
+                        .map(SimpleGrantedAuthority::new)
+                        .toList()
                 );
-
-                SecurityContextHolder.getContext().setAuthentication(authToken);
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                context.setAuthentication(authToken);
+                SecurityContextHolder.setContext(context);
             }
 
             filterChain.doFilter(request, response);
