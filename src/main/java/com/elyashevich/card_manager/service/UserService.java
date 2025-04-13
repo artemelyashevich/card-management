@@ -4,7 +4,6 @@ import com.elyashevich.card_manager.api.dto.filter.FilterDto;
 import com.elyashevich.card_manager.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 
 public interface UserService {
 

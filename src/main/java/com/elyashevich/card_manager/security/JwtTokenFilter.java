@@ -9,7 +9,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,13 +20,17 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 import static com.elyashevich.card_manager.util.TokenConstantUtil.TOKEN_PREFIX;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class JwtTokenFilter extends OncePerRequestFilter {
 
-    private static final int BEGIN_INDEX = 7;
+    private static final int TOKEN_PREFIX_LENGTH = 7;
+    private static final String AUTH_ERROR_MESSAGE = "Authentication error: {}";
 
     @Override
     protected void doFilterInternal(
@@ -31,34 +38,46 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         @NonNull final HttpServletResponse response,
         @NonNull final FilterChain filterChain
     ) throws ServletException, IOException {
-        var header = request.getHeader(HttpHeaders.AUTHORIZATION);
-        String jwt = null;
-        String email = null;
-        if (header != null && header.startsWith(TOKEN_PREFIX)) {
-            jwt = header.substring(BEGIN_INDEX);
-            try {
-                email = SafetyExtractEmailUtil.extractEmailClaims(jwt);
-            } catch (InvalidTokenException e) {
-                handleException(response, e.getMessage());
+        try {
+            String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
+
+            if (authHeader == null || !authHeader.startsWith(TOKEN_PREFIX)) {
+                filterChain.doFilter(request, response);
                 return;
             }
-            if (SecurityContextHolder.getContext().getAuthentication() == null) {
-                var token = new UsernamePasswordAuthenticationToken(
+
+            String jwt = authHeader.substring(TOKEN_PREFIX_LENGTH);
+            String email = SafetyExtractEmailUtil.extractEmailClaims(jwt);
+
+            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+
+                List<SimpleGrantedAuthority> authorities = TokenUtil.getRoles(jwt).stream()
+                    .map(SimpleGrantedAuthority::new)
+                    .toList();
+
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                     email,
                     null,
-                    TokenUtil.getRoles(jwt).stream()
-                        .map(SimpleGrantedAuthority::new)
-                        .toList()
+                    authorities
                 );
-                SecurityContextHolder.getContext().setAuthentication(token);
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
+
             filterChain.doFilter(request, response);
+        } catch (InvalidTokenException e) {
+            log.warn(AUTH_ERROR_MESSAGE, e.getMessage());
+            handleAuthenticationError(response, e.getMessage());
+        } catch (Exception e) {
+            log.error("Unexpected authentication error", e);
+            handleAuthenticationError(response, "Internal authentication error");
         }
     }
-    private static void handleException(HttpServletResponse response, String message) throws IOException {
+
+    private void handleAuthenticationError(HttpServletResponse response, String message) throws IOException {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        var content = JsonMessageProviderUtil.provide(message);
-        response.getWriter().write(content);
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(JsonMessageProviderUtil.provide(message));
+        response.getWriter().flush();
     }
 }

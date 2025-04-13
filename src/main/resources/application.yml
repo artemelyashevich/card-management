@@ -2,7 +2,6 @@ spring:
   application:
     name: card-manager
   jpa:
-    database: mysql
     show-sql: true
     hibernate:
       ddl-auto: validate

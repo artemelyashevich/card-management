@@ -6,7 +6,10 @@ import com.elyashevich.card_manager.security.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -19,6 +22,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(
+    prePostEnabled = true,
+    securedEnabled = true,
+    jsr250Enabled = true
+)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -29,19 +37,26 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(final HttpSecurity http) throws Exception {
-        return http
-            .cors(AbstractHttpConfigurer::disable)
+        http
             .csrf(AbstractHttpConfigurer::disable)
-            .sessionManagement(sessionManagement -> sessionManagement
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .exceptionHandling(e -> e
-                .accessDeniedHandler(this.jwtAccessDeniedHandler)
-                .authenticationEntryPoint(this.jwtAuthenticationEntryPoint))
-            .authorizeHttpRequests(authorizeRequests -> authorizeRequests
-                .requestMatchers("/api/v1/auth/*").permitAll()
+            .cors(AbstractHttpConfigurer::disable)
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(this.jwtAuthenticationEntryPoint)
+                .accessDeniedHandler(this.jwtAccessDeniedHandler))
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers(
+                    "/api/v1/auth/**",
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html"
+                ).permitAll()
                 .anyRequest().authenticated())
-            .addFilterBefore(this.jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-            .build();
+            .authenticationProvider(this.daoAuthenticationProvider())
+            .addFilterBefore(this.jwtTokenFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 
     @Bean
@@ -51,9 +66,15 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider daoAuthenticationProvider() {
-        var daoAuthenticationProvider = new DaoAuthenticationProvider();
-        daoAuthenticationProvider.setPasswordEncoder(this.passwordEncoder());
-        daoAuthenticationProvider.setUserDetailsService(this.userDetailsService);
-        return daoAuthenticationProvider;
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+        provider.setUserDetailsService(this.userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(
+        AuthenticationConfiguration authenticationConfiguration) throws Exception {
+        return authenticationConfiguration.getAuthenticationManager();
     }
 }

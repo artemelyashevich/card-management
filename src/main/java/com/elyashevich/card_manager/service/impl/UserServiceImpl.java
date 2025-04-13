@@ -11,9 +11,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +25,6 @@ public class UserServiceImpl implements UserService {
     public static final String USER_WITH_EMAIL_ALREADY_EXISTS_TEMPLATE = "User with email: '%s' already exists";
 
     private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     public Page<User> findAll(final FilterDto filterDto, final PageRequest pageRequest) {
@@ -91,7 +88,6 @@ public class UserServiceImpl implements UserService {
             throw new ResourceAlreadyExistsException(message);
         }
 
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
         user.addRole(Role.ROLE_USER);
 
         var newUser = this.userRepository.save(user);

@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.stream.Stream;
@@ -32,6 +33,9 @@ class AuthServiceImplTest {
 
     @Mock
     private UserService userService;
+
+    @Mock
+    private AuthenticationManager authenticationManager;
 
     @Mock
     private PasswordEncoder passwordEncoder;

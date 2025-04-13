@@ -31,7 +31,7 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
-@ToString(exclude = "encryptedCardNumber")
+@ToString(exclude = "cardNumber")
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,9 +39,9 @@ public class Card {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    
+
     @Column(name = "encrypted_card_number", nullable = false, unique = true)
-    private String encryptedCardNumber;
+    private byte[] cardNumber;
     
     @Column(name = "masked_card_number", nullable = false)
     private String maskedCardNumber;

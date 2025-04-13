@@ -89,6 +89,7 @@ public class TokenUtil {
                                 userDetails.getRoles().stream()
                                     .map(Role::name)
                                     .map(SimpleGrantedAuthority::new)
+                                    .map(GrantedAuthority::getAuthority)
                                     .toList()
                         )
                 )
