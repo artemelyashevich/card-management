@@ -5,6 +5,7 @@ import com.elyashevich.card_manager.api.dto.card.CardWithUserDto;
 import com.elyashevich.card_manager.entity.Card;
 import com.elyashevich.card_manager.entity.CardLimit;
 import com.elyashevich.card_manager.entity.CardStatus;
+import com.elyashevich.card_manager.exception.BusinessException;
 import com.elyashevich.card_manager.exception.ResourceNotFoundException;
 import com.elyashevich.card_manager.repository.CardRepository;
 import com.elyashevich.card_manager.service.CardService;
@@ -60,7 +61,7 @@ public class CardServiceImpl implements CardService {
         try {
             encrypted = encryptionService.encrypt(card.cardNumber());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new BusinessException(e);
         }
         var masked = mask(card.cardNumber());
 

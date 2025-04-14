@@ -30,7 +30,6 @@ public class UserServiceImpl implements UserService {
     public Page<User> findAll(final FilterDto filterDto, final PageRequest pageRequest) {
         log.debug("Attempting to find all users");
 
-        // TODO
         var users = userRepository.findAll(
             PageRequest.of(
                 pageRequest.getPageSize(),
