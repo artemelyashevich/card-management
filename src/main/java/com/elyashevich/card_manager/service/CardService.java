@@ -16,6 +16,8 @@ public interface CardService {
 
     Card create(final CardRequestDto card);
 
+    Card findByCardIdAndUserEmail(final Long cardId, final String email);
+
     List<CardWithUserDto> findAll();
 
     Card changeStatus(final Long id, final CardStatus status);
@@ -25,4 +27,6 @@ public interface CardService {
     Card saveLimit(final Long id, final CardLimit cardLimit);
 
     void deleteLimit(final Long cardId);
+
+    boolean existsByUserEmailAndCardId(final String userEmail, final Long cardId);
 }

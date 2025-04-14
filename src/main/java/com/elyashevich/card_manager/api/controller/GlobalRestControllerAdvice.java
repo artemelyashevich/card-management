@@ -1,10 +1,12 @@
 package com.elyashevich.card_manager.api.controller;
 
 import com.elyashevich.card_manager.api.dto.exception.ExceptionBodyDto;
+import com.elyashevich.card_manager.exception.BusinessException;
 import com.elyashevich.card_manager.exception.InvalidTokenException;
 import com.elyashevich.card_manager.exception.PasswordMismatchException;
 import com.elyashevich.card_manager.exception.ResourceAlreadyExistsException;
 import com.elyashevich.card_manager.exception.ResourceNotFoundException;
+import com.elyashevich.card_manager.exception.TransactionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +56,14 @@ public class GlobalRestControllerAdvice {
             .body(this.handleException(exception, NOT_FOUND_MESSAGE));
     }
 
+    @ExceptionHandler(TransactionException.class)
+    public ResponseEntity<ExceptionBodyDto> handleTransactionException(
+        final TransactionException exception
+    ) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body(this.handleException(exception, FAILED_VALIDATION_MESSAGE));
+    }
+
     @ExceptionHandler(ResourceAlreadyExistsException.class)
     public ResponseEntity<ExceptionBodyDto> handleResourceAlreadyExistsException(
         final ResourceAlreadyExistsException exception
@@ -93,6 +103,12 @@ public class GlobalRestControllerAdvice {
             );
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body(new ExceptionBodyDto(FAILED_VALIDATION_MESSAGE, errors));
+    }
+
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ExceptionBodyDto> handleBusinessException(final BusinessException exception) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(this.handleException(exception, UNEXPECTED_ERROR_MESSAGE));
     }
 
     @ExceptionHandler(RuntimeException.class)

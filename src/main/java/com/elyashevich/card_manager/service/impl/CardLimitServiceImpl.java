@@ -9,6 +9,7 @@ import com.elyashevich.card_manager.service.CardService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
@@ -21,7 +22,7 @@ public class CardLimitServiceImpl implements CardLimitService {
     private final CardLimitRepository cardLimitRepository;
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Card setLimit(final Long cardId, final CardLimit limit) {
         log.debug("Attempting set limit to card: {}", cardId);
 
@@ -33,7 +34,7 @@ public class CardLimitServiceImpl implements CardLimitService {
     }
 
     @Override
-    @Transactional
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void deleteLimit(final Long cardId, final Long limitId) {
         log.debug("Attempting delete limit to card: {}", cardId);
 
@@ -50,5 +51,4 @@ public class CardLimitServiceImpl implements CardLimitService {
 
         log.info("Limit deleted: {}", cardId);
     }
-
 }

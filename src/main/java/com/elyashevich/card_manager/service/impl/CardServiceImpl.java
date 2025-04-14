@@ -26,6 +26,7 @@ import java.util.List;
 public class CardServiceImpl implements CardService {
 
     public static final String CARD_WITH_ID_WAS_NOT_FOUND_TEMPLATE = "Card with id: '%d' was not found";
+    public static final String CARD_WITH_ID_AND_USER_EMAIL_WAS_NOT_FOUND_TEMPLATE = "Card with id: '%d' and userEmail: '%s' was not found";
     private final CardRepository cardRepository;
     private final UserService userService;
     private final EncryptionService encryptionService;
@@ -77,6 +78,21 @@ public class CardServiceImpl implements CardService {
 
         log.info("Created card: {}", newCard);
         return saved;
+    }
+
+    @Override
+    public Card findByCardIdAndUserEmail(final Long cardId, final String email) {
+        log.debug("Attempting find card by id: {} and email: {}", cardId, email);
+        var card = this.cardRepository.findByIdAndCardHolderName(cardId, email).orElseThrow(
+            () -> {
+                var message = CARD_WITH_ID_AND_USER_EMAIL_WAS_NOT_FOUND_TEMPLATE.formatted(cardId, email);
+                log.error(message);
+                return new ResourceNotFoundException(message);
+            }
+        );
+
+        log.info("Found card: {}", card);
+        return card;
     }
 
     @Override
@@ -141,6 +157,16 @@ public class CardServiceImpl implements CardService {
         var updated = this.cardRepository.save(card);
 
         log.info("Updated card: {}", updated);
+    }
+
+    @Override
+    public boolean existsByUserEmailAndCardId(final String userEmail, final Long cardId) {
+        log.debug("Attempting exists by user email '{}' and card id {}", userEmail, cardId);
+
+        var isExists = this.cardRepository.existsByIdAndUserEmail(cardId, userEmail);
+
+        log.info("Exists card: {}", isExists);
+        return isExists;
     }
 
     private String mask(final String cardNumber) {
