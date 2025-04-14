@@ -56,6 +56,8 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/api/v1/limits/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/v1/transactions/*").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/users").hasRole("ADMIN")
+                .requestMatchers("/api/v1/limits/**").hasRole("ADMIN")
                 .requestMatchers("/api/v1/transactions/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .authenticationProvider(this.daoAuthenticationProvider())
