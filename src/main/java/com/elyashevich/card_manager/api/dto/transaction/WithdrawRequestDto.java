@@ -2,7 +2,7 @@ package com.elyashevich.card_manager.api.dto.transaction;
 
 import java.math.BigDecimal;
 
-public record WithdrawRequest(
+public record WithdrawRequestDto(
     Long cardId,
     BigDecimal amount
 ) {

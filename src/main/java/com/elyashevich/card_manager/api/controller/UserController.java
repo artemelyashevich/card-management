@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -46,5 +47,11 @@ public class UserController {
     public ResponseEntity<UserResponseDto> findByEmail(final @PathVariable("email") String email) {
         var user = this.userService.findByEmail(email);
         return ResponseEntity.ok(userMapper.toDto(user));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteById(final @PathVariable("id") Long id) {
+        this.userService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

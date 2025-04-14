@@ -26,7 +26,11 @@ public interface CardService {
 
     Card saveLimit(final Long id, final CardLimit cardLimit);
 
+    void updateAllBalances(final List<Card> cards);
+
     void deleteLimit(final Long cardId);
 
     boolean existsByUserEmailAndCardId(final String userEmail, final Long cardId);
+
+    Card setStatus(final Long id, final CardStatus cardStatus);
 }

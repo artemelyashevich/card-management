@@ -148,6 +148,20 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    public void updateAllBalances(final List<Card> cards) {
+        log.debug("Attempting update all balances for cards: {}", cards);
+
+        for (var card : cards) {
+            var candidate = this.findById(card.getId());
+            candidate.setBalance(card.getBalance());
+            this.cardRepository.save(candidate);
+        }
+
+        log.info("Updated all balances");
+    }
+
+    @Override
+    @Transactional
     public void deleteLimit(final Long cardId) {
         log.debug("Attempting delete limit for id: {}", cardId);
 
@@ -167,6 +181,20 @@ public class CardServiceImpl implements CardService {
 
         log.info("Exists card: {}", isExists);
         return isExists;
+    }
+
+    @Override
+    @Transactional
+    public Card setStatus(Long id, final CardStatus cardStatus) {
+        log.debug("Attempting set status for id: {}", id);
+
+        var card = this.findById(id);
+        card.setStatus(cardStatus);
+
+        var updated = this.cardRepository.save(card);
+
+        log.info("Updated card: {}", updated);
+        return updated;
     }
 
     private String mask(final String cardNumber) {

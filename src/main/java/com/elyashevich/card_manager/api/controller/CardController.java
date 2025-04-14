@@ -3,11 +3,14 @@ package com.elyashevich.card_manager.api.controller;
 import com.elyashevich.card_manager.api.dto.card.CardRequestDto;
 import com.elyashevich.card_manager.api.dto.card.CardWithUserDto;
 import com.elyashevich.card_manager.entity.Card;
+import com.elyashevich.card_manager.entity.CardStatus;
 import com.elyashevich.card_manager.service.CardService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -42,5 +45,23 @@ public class CardController {
                 .replacePath("/api/v1/cards/{cardId}")
                 .build(Map.of("cardId", card.getId()))
         ).body(card);
+    }
+
+    @PostMapping("/block/{id}")
+    public ResponseEntity<Card> block(
+        final @PathVariable Long id,
+        final UriComponentsBuilder uriComponentsBuilder
+    ) {
+        var card = this.cardService.setStatus(id, CardStatus.BLOCKED);
+        return ResponseEntity.created(
+            uriComponentsBuilder.replacePath("/api/v1/cards/{id}")
+                .build(Map.of("id", card.getId()))
+        ).body(card);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(final @PathVariable("id") Long id) {
+        this.cardService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }

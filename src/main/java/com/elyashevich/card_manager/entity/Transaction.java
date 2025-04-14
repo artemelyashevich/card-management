@@ -46,7 +46,7 @@ public class Transaction {
     
     @ManyToOne
     @JoinColumn(name = "card_id", nullable = false)
-    private Card fromCard;
+    private Card card;
 
     @Column
     private String description;

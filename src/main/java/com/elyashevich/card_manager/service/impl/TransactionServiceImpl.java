@@ -53,6 +53,22 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
+    public Transaction findById(final Long id) {
+        log.debug("Attempting find transaction by id: {}", id);
+
+        var transaction = this.transactionRepository.findById(id).orElseThrow(
+            () -> {
+                var message = "Transaction with id: '%s' was not found".formatted(id);
+                log.error(message);
+                return new ResourceNotFoundException(message);
+            }
+        );
+
+        log.info("Found transaction: {}", transaction);
+        return transaction;
+    }
+
+    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public Transaction transferBetweenCards(final Long fromCardId, final Long toCardId, final BigDecimal amount) {
         log.debug("Attempting transfer between cards from {} to {}", fromCardId, toCardId);
@@ -67,7 +83,7 @@ public class TransactionServiceImpl implements TransactionService {
         fromCard.setBalance(fromCard.getBalance().subtract(amount));
         toCard.setBalance(toCard.getBalance().add(amount));
 
-        // saveAllCards
+        this.cardService.updateAllBalances(List.of(fromCard, toCard));
 
         var transaction =
             this.transactionRepository.save(Transaction.builder()
@@ -76,7 +92,7 @@ public class TransactionServiceImpl implements TransactionService {
                 .card(fromCard)
                 .timestamp(LocalDateTime.now())
                 .build()
-        );
+            );
 
         log.info("Transfer between cards from {} to {}", fromCardId, toCardId);
         return transaction;
@@ -94,7 +110,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         card.setBalance(card.getBalance().subtract(amount));
 
-        // save card
+        this.cardService.updateAllBalances(List.of(card));
 
         var transaction = this.transactionRepository.save(Transaction.builder()
             .card(card)
@@ -109,17 +125,20 @@ public class TransactionServiceImpl implements TransactionService {
 
     private void validateTransaction(final Card card, final BigDecimal amount) {
         if (!card.getStatus().equals(CardStatus.ACTIVE)) {
+            log.error("Card status is not ACTIVE");
             throw new TransactionException("Card status is not ACTIVE");
         }
 
         if (card.getBalance().compareTo(amount) < 0) {
+            log.error("Card balance is lower than amount");
             throw new TransactionException("Card limit not enough");
         }
 
         var cardLimit = card.getLimit();
 
         var dailySpent = this.transactionRepository.calculateDailySpent(card.getId(), LocalDate.now());
-        if (dailySpent.add(amount).compareTo(cardLimit.getDailyLimit()) > 0) {
+        if (dailySpent != null && dailySpent.add(amount).compareTo(cardLimit.getDailyLimit()) > 0) {
+            log.error("Card limit exceeded");
             throw new TransactionException("Daily spent limit exceeded");
         }
 
@@ -128,7 +147,8 @@ public class TransactionServiceImpl implements TransactionService {
             LocalDate.now().getYear(),
             YearMonth.now().getMonthValue()
         );
-        if (monthlySpend.add(amount).compareTo(cardLimit.getMonthlyLimit()) > 0) {
+        if (monthlySpend != null && monthlySpend.add(amount).compareTo(cardLimit.getMonthlyLimit()) > 0) {
+            log.error("Card limit exceeded");
             throw new TransactionException("Monthly limit exceeded");
         }
     }

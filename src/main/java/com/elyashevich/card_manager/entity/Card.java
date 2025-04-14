@@ -62,10 +62,10 @@ public class Card {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     
-    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Transaction> transactions;
     
-    @OneToOne(mappedBy = "card", cascade = CascadeType.ALL)
+    @OneToOne(mappedBy = "card", cascade = CascadeType.ALL, orphanRemoval = true)
     private CardLimit limit;
 
     public void addTransaction(Transaction transaction) {
