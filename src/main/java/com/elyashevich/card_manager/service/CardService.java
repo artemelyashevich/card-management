@@ -18,7 +18,7 @@ public interface CardService {
 
     Card findByCardIdAndUserEmail(final Long cardId, final String email);
 
-    List<CardWithUserDto> findAll();
+    List<CardWithUserDto> findAll(String sort, String sortField, int pageNo, int sizePerPage);
 
     Card changeStatus(final Long id, final CardStatus status);
 

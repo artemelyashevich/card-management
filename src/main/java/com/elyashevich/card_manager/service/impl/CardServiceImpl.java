@@ -98,10 +98,10 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CardWithUserDto> findAll() {
+    public List<CardWithUserDto> findAll(String sort, String sortField, int pageNo, int sizePerPage) {
         log.debug("Attempting find all cards");
 
-        var cards = this.cardRepository.findAllCardsWithUsers();
+        var cards = this.cardRepository.findAllCardsWithUsers(sort, sortField, pageNo, sizePerPage);
 
         log.info("Found {} cards", cards);
         return cards;

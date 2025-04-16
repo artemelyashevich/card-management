@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -28,8 +29,13 @@ public class CardController {
     private final CardService cardService;
 
     @GetMapping
-    public ResponseEntity<List<CardWithUserDto>> findAll() {
-        var cards = this.cardService.findAll();
+    public ResponseEntity<List<CardWithUserDto>> findAll(
+        final @RequestParam(name = "sort", required = false, defaultValue = "asc") String sort,
+        final @RequestParam(name = "field", required = false, defaultValue = "id") String sortField,
+        final @RequestParam(name = "pageNo", required = false, defaultValue = "1") int pageNo,
+        final @RequestParam(name = "size", required = false, defaultValue = "5") int sizePerPage
+    ) {
+        var cards = this.cardService.findAll(sort, sortField, pageNo, sizePerPage);
         return ResponseEntity.ok(cards);
     }
 
