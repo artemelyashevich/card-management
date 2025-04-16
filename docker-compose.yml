@@ -1,0 +1,52 @@
+services:
+  mysql:
+    container_name: mysql
+    env_file:
+      - .env
+    image: mysql:latest
+    restart: unless-stopped
+    ports:
+      - "5111:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: admin
+      MYSQL_USER: ${MYSQL_USERNAME}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_URL}
+    networks:
+      - spring-app
+
+  redis:
+    container_name: redis
+    env_file:
+      - .env
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    networks:
+      - spring-app
+
+  app:
+    container_name: card-management
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${MYSQL_URL}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+    depends_on:
+      - mysql
+      - redis
+    ports:
+      - "8080:8080"
+    networks:
+      - spring-app
+
+networks:
+  spring-app:
+    driver: bridge

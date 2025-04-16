@@ -1,18 +1,20 @@
 spring:
   application:
     name: card-manager
+  config:
+    import: optional:file:.env[.properties]
   data:
     redis:
-      host: 127.0.0.1
-      port: 6379
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
   jpa:
     show-sql: true
     hibernate:
       ddl-auto: validate
   datasource:
-    username: admin
-    password: admin
-    url: jdbc:mysql://localhost:3306/card
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://localhost:3306/${MYSQL_URL}
     hikari:
       connection-timeout: 20000
       maximum-pool-size: 5
