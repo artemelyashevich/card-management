@@ -30,12 +30,23 @@ public class CardController {
 
     @GetMapping
     public ResponseEntity<List<CardWithUserDto>> findAll(
-        final @RequestParam(name = "sort", required = false, defaultValue = "asc") String sort,
         final @RequestParam(name = "field", required = false, defaultValue = "id") String sortField,
         final @RequestParam(name = "pageNo", required = false, defaultValue = "1") int pageNo,
         final @RequestParam(name = "size", required = false, defaultValue = "5") int sizePerPage
     ) {
-        var cards = this.cardService.findAll(sort, sortField, pageNo, sizePerPage);
+        var cards = this.cardService.findAll(sortField, pageNo, sizePerPage);
+        return ResponseEntity.ok(cards);
+    }
+
+    @GetMapping("/{cardId}")
+    public ResponseEntity<CardWithUserDto> findById(final @PathVariable("cardId") Long cardId) {
+        var card = this.cardService.findCardWithUserById(cardId);
+        return ResponseEntity.ok(card);
+    }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<CardWithUserDto>> findByUserId(final @PathVariable("userId") Long userId) {
+        var cards = this.cardService.findByUserId(userId);
         return ResponseEntity.ok(cards);
     }
 

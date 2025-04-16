@@ -2,7 +2,6 @@ package com.elyashevich.card_manager.repository;
 
 import com.elyashevich.card_manager.api.dto.card.CardWithUserDto;
 import com.elyashevich.card_manager.entity.Card;
-import com.elyashevich.card_manager.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,22 +21,49 @@ public interface CardRepository extends JpaRepository<Card, Long> {
             c.expirationDate as expirationDate,
             c.status as status
         FROM Card c
-        ORDER BY :sortField :sortDir
-        LIMIT
-          :pageSize
-        OFFSET
-          (:pageNo - 1) * pageSize
+        ORDER BY :sortField
+        LIMIT :pageSize
+        OFFSET :skip
         """)
     List<CardWithUserDto> findAllCardsWithUsers(
-        final @Param("sortDir") String sort,
         final @Param("sortField") String sortField,
-        final @Param("pageNo") int pageNo,
-        final @Param("pageSize") int pageSize
+        final @Param("pageSize") int pageSize,
+        final @Param("skip") int skip
         );
 
-    List<Card> user(final User user);
+    @Query(
+        """
+        SELECT
+            c.id as id,
+            c.maskedCardNumber as maskedCardNumber,
+            c.cardHolderName as cardHolderName,
+            c.user as user,
+            c.balance as balance,
+            c.expirationDate as expirationDate,
+            c.status as status
+        FROM Card c
+        WHERE id = :id
+        """
+    )
+    Optional<CardWithUserDto> findCardWithUserById(final @Param("id") Long id);
 
     boolean existsByIdAndUserEmail(final Long cardId, final String userEmail);
 
     Optional<Card> findByIdAndCardHolderName(final Long cardId, final String cardHolderName);
+
+    @Query(
+        """
+        SELECT
+            c.id as id,
+            c.maskedCardNumber as maskedCardNumber,
+            c.cardHolderName as cardHolderName,
+            c.user as user,
+            c.balance as balance,
+            c.expirationDate as expirationDate,
+            c.status as status
+        FROM Card c
+        WHERE c.user.id = :userId
+        """
+    )
+    List<CardWithUserDto> findAllCardWithUserById(final @Param("userId") Long userId);
 }

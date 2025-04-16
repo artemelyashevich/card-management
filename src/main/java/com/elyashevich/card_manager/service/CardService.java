@@ -12,13 +12,15 @@ public interface CardService {
 
     Card findById(final Long id);
 
-    List<Card> findByUserId(final Long userId);
+    CardWithUserDto findCardWithUserById(final Long id);
+
+    List<CardWithUserDto> findByUserId(final Long userId);
 
     Card create(final CardRequestDto card);
 
     Card findByCardIdAndUserEmail(final Long cardId, final String email);
 
-    List<CardWithUserDto> findAll(String sort, String sortField, int pageNo, int sizePerPage);
+    List<CardWithUserDto> findAll(final String sortField, final int pageNo, final int sizePerPage);
 
     Card changeStatus(final Long id, final CardStatus status);
 

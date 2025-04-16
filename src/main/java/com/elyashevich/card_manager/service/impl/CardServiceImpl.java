@@ -13,7 +13,6 @@ import com.elyashevich.card_manager.service.EncryptionService;
 import com.elyashevich.card_manager.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,8 +48,31 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
-    public List<Card> findByUserId(final Long userId) {
-        throw new NotImplementedException();
+    @Transactional(readOnly = true)
+    public CardWithUserDto findCardWithUserById(final Long id) {
+        log.debug("Attempting find card by id: {}", id);
+
+        var card = this.cardRepository.findCardWithUserById(id).orElseThrow(
+            () -> {
+                var message = CARD_WITH_ID_WAS_NOT_FOUND_TEMPLATE.formatted(id);
+                log.error(message);
+                return new ResourceNotFoundException(message);
+            }
+        );
+
+        log.info("Found card: {}", card);
+        return card;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CardWithUserDto> findByUserId(final Long userId) {
+        log.debug("Attempting find all cards by id: {}", userId);
+
+        var cards = this.cardRepository.findAllCardWithUserById(userId);
+
+        log.info("Found cards: {}", cards);
+        return cards;
     }
 
     @Override
@@ -98,10 +120,10 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<CardWithUserDto> findAll(String sort, String sortField, int pageNo, int sizePerPage) {
+    public List<CardWithUserDto> findAll(final String sortField, final int pageNo, final int sizePerPage) {
         log.debug("Attempting find all cards");
 
-        var cards = this.cardRepository.findAllCardsWithUsers(sort, sortField, pageNo, sizePerPage);
+        var cards = this.cardRepository.findAllCardsWithUsers(sortField, pageNo, pageNo * sizePerPage);
 
         log.info("Found {} cards", cards);
         return cards;
