@@ -13,6 +13,10 @@ import com.elyashevich.card_manager.service.EncryptionService;
 import com.elyashevich.card_manager.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,6 +53,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value="CardService::findCardWithUserById", key = "#id")
     public CardWithUserDto findCardWithUserById(final Long id) {
         log.debug("Attempting find card by id: {}", id);
 
@@ -66,6 +71,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value="CardService::findByUserId", key = "#userId")
     public List<CardWithUserDto> findByUserId(final Long userId) {
         log.debug("Attempting find all cards by id: {}", userId);
 
@@ -77,6 +83,14 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    @Caching(
+        put = {
+            @CachePut(value = "CardServiceImpl::findById", key="#result.id"),
+            @CachePut(value = "CardServiceImpl::findCardWithUserById", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByUserId", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByCardIdAndUserEmail", key = "{#result.user.id, #result.id}")
+        }
+    )
     public Card create(final CardRequestDto card) {
         log.debug("Attempting create card for user: {}", card.userEmail());
         byte[] encrypted = {};
@@ -104,6 +118,7 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    @Cacheable(value = "CardService::findByCardIdAndUserEmail", key = "{#email,#cardId}")
     public Card findByCardIdAndUserEmail(final Long cardId, final String email) {
         log.debug("Attempting find card by id: {} and email: {}", cardId, email);
         var card = this.cardRepository.findByIdAndCardHolderName(cardId, email).orElseThrow(
@@ -120,6 +135,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "CardService::findAll")
     public List<CardWithUserDto> findAll(final String sortField, final int pageNo, final int sizePerPage) {
         log.debug("Attempting find all cards");
 
@@ -131,6 +147,14 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    @Caching(
+        put = {
+            @CachePut(value = "CardServiceImpl::findById", key="#result.id"),
+            @CachePut(value = "CardServiceImpl::findCardWithUserById", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByUserId", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByCardIdAndUserEmail", key = "{#result.user.id, #result.id}")
+        }
+    )
     public Card changeStatus(final Long id, final CardStatus status) {
         log.debug("Attempting change status for id: {}", id);
 
@@ -145,6 +169,7 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    @CacheEvict(allEntries = true)
     public void delete(final Long id) {
         log.debug("Attempting delete card with id: {}", id);
 
@@ -157,6 +182,14 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    @Caching(
+        put = {
+            @CachePut(value = "CardServiceImpl::findById", key="#result.id"),
+            @CachePut(value = "CardServiceImpl::findCardWithUserById", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByUserId", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByCardIdAndUserEmail", key = "{#result.user.id, #result.id}")
+        }
+    )
     public Card saveLimit(final Long id, final CardLimit cardLimit) {
         log.debug("Attempting save limit for id: {}", id);
 
@@ -171,6 +204,14 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    @Caching(
+        put = {
+            @CachePut(value = "CardServiceImpl::findById", key="#result.id"),
+            @CachePut(value = "CardServiceImpl::findCardWithUserById", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByUserId", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByCardIdAndUserEmail", key = "{#result.user.id, #result.id}")
+        }
+    )
     public void updateAllBalances(final List<Card> cards) {
         log.debug("Attempting update all balances for cards: {}", cards);
 
@@ -185,6 +226,14 @@ public class CardServiceImpl implements CardService {
 
     @Override
     @Transactional
+    @Caching(
+        put = {
+            @CachePut(value = "CardServiceImpl::findById", key="#result.id"),
+            @CachePut(value = "CardServiceImpl::findCardWithUserById", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByUserId", key = "#result.user.id"),
+            @CachePut(value = "CardServiceImpl::findByCardIdAndUserEmail", key = "{#result.user.id, #result.id}")
+        }
+    )
     public void deleteLimit(final Long cardId) {
         log.debug("Attempting delete limit for id: {}", cardId);
 

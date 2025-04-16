@@ -1,13 +1,12 @@
 package com.elyashevich.card_manager.service;
 
-import com.elyashevich.card_manager.api.dto.filter.FilterDto;
 import com.elyashevich.card_manager.entity.User;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
+
+import java.util.List;
 
 public interface UserService {
 
-    Page<User> findAll(final FilterDto filterDto, final PageRequest pageRequest);
+    List<User> findAll();
 
     User findById(final Long id);
 

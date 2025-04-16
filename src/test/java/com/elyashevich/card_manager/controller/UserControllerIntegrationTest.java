@@ -1,8 +1,6 @@
 package com.elyashevich.card_manager.controller;
 
 import com.elyashevich.card_manager.api.controller.UserController;
-import com.elyashevich.card_manager.api.dto.filter.FilterDto;
-import com.elyashevich.card_manager.api.mapper.UserMapper;
 import com.elyashevich.card_manager.api.mapper.UserMapperImpl;
 import com.elyashevich.card_manager.entity.User;
 import com.elyashevich.card_manager.service.UserService;
@@ -16,7 +14,6 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -50,7 +47,7 @@ class UserControllerIntegrationTest {
     void getAllUsersWithCustomPaginationShouldUseParameters() throws Exception {
         // Arrange
         Page<User> emptyPage = new PageImpl<>(Collections.emptyList());
-        when(userService.findAll(any(FilterDto.class), any(PageRequest.class)))
+        when(userService.findAll())
             .thenReturn(emptyPage);
 
         // Act & Assert
@@ -62,8 +59,6 @@ class UserControllerIntegrationTest {
             .andExpect(status().isOk());
 
         verify(userService).findAll(
-            new FilterDto("desc"),
-            PageRequest.of(2, 5)
         );
     }
 

@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
@@ -24,23 +26,10 @@ public class UserController {
     private static final UserMapper userMapper = UserMapper.INSTANCE;
 
     @GetMapping
-    public ResponseEntity<Page<UserResponseDto>> findAll(
-        @RequestParam(value = "page", required = false) Integer page,
-        @RequestParam(value = "pageSize", required = false) Integer pageSize,
-        @RequestParam(value = "sort", required = false) String sort
-    ) {
-        if (page == null) {
-            page = 0;
-        }
-        if (pageSize == null) {
-            pageSize = 20;
-        }
-        if (sort == null || sort.isEmpty()) {
-            sort = "asc";
-        }
-        var users = this.userService.findAll(new FilterDto(sort), PageRequest.of(page, pageSize));
+    public ResponseEntity<List<UserResponseDto>> findAll() {
+        var users = this.userService.findAll();
 
-        return ResponseEntity.ok(users.map(userMapper::toDto));
+        return ResponseEntity.ok(userMapper.toDto(users));
     }
 
     @GetMapping("/{email}")

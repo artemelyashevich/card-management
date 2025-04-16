@@ -1,6 +1,5 @@
 package com.elyashevich.card_manager.service.impl;
 
-import com.elyashevich.card_manager.api.dto.filter.FilterDto;
 import com.elyashevich.card_manager.entity.Role;
 import com.elyashevich.card_manager.entity.User;
 import com.elyashevich.card_manager.exception.ResourceAlreadyExistsException;
@@ -9,11 +8,14 @@ import com.elyashevich.card_manager.repository.UserRepository;
 import com.elyashevich.card_manager.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -27,18 +29,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     @Override
-    public Page<User> findAll(final FilterDto filterDto, final PageRequest pageRequest) {
+    @Cacheable(value = "UserServiceImpl::findAll")
+    public List<User> findAll() {
         log.debug("Attempting to find all users");
 
-        var users = userRepository.findAll(
-            PageRequest.of(
-                pageRequest.getPageSize(),
-                pageRequest.getPageNumber(),
-                Sort.by(filterDto.sort().equalsIgnoreCase("asc")
-                ? Sort.Direction.ASC
-                : Sort.Direction.DESC
-            ))
-        );
+        var users = userRepository.findAll();
 
         log.info("Found users: {}", users);
         return users;
@@ -61,6 +56,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Cacheable(value = "UserServiceImpl::findByEmail", key = "#email")
     public User findByEmail(final String email) {
         log.debug("Attempting to find user by email: {}", email);
 
@@ -78,6 +74,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @Caching(
+        put = {
+            @CachePut(value = "UserServiceImpl::findById", key="#result.id"),
+            @CachePut(value = "UserServiceImpl::findByEmail", key = "#user.email"),
+            @CachePut(value = "UserServiceImpl::findAll")
+        }
+    )
     public User create(final User user) {
         log.debug("Attempting to create user: {}", user);
 
@@ -97,6 +100,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @Caching(
+        put = {
+            @CachePut(value = "UserServiceImpl::findById", key="#result.id"),
+            @CachePut(value = "UserServiceImpl::findByEmail", key = "#user.email"),
+            @CachePut(value = "UserServiceImpl::findAll")
+        }
+    )
     public User updateEmail(final Long id, final User user) {
         log.debug("Attempting to update user with id: {}", id);
 
@@ -121,6 +131,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "UserServiceImpl::findById", key = "#id")
     public void delete(final Long id) {
         log.debug("Attempting to delete user by id: {}", id);
 
